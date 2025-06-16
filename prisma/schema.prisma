@@ -14,17 +14,16 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
 model Usuario {
-  id_user        Int           @id @default(autoincrement())
-  email          String        @unique
+  id_user        Int      @id @default(autoincrement())
+  email          String   @unique
   nombre         String
   apellidos      String
   tipo           String
   rol            String
   foto_url       String?
-  fecha_creacion DateTime      @default(now())
-  activo         Boolean       @default(true)
+  fecha_creacion DateTime @default(now())
+  activo         Boolean  @default(true)
 
   usuEmpresas    UsuEmp[]
   proyectos      ProyUsu[]
@@ -32,114 +31,126 @@ model Usuario {
 }
 
 model Empresa {
-  id_empresa  Int       @id @default(autoincrement())
-  nombre      String
+  id_empresa Int    @id @default(autoincrement())
+  nombre     String
 
-  usuarios    UsuEmp[]
-  proyectos   Proyecto[]
-  documentos  Documento[]
-  facturas    Factura[]
+  usuarios       UsuEmp[]
+  proyectos      Proyecto[]
+  documentos     Documento[]
+  facturas       Factura[]
   notificaciones Notificacion[]
 }
 
 model UsuEmp {
-  id          Int     @id @default(autoincrement())
-  id_user     Int
-  id_empresa  Int
+  id         Int @id @default(autoincrement())
+  id_user    Int
+  id_empresa Int
 
-  usuario     Usuario @relation(fields: [id_user], references: [id_user])
-  empresa     Empresa @relation(fields: [id_empresa], references: [id_empresa])
+  usuario Usuario @relation(fields: [id_user], references: [id_user])
+  empresa Empresa @relation(fields: [id_empresa], references: [id_empresa])
 
   @@unique([id_user, id_empresa])
 }
 
-model Proyecto {
-  id_proy     Int       @id @default(autoincrement())
-  id_empresa  Int
+enum EstadoProyecto {
+  en_curso
+  completado
+  pendiente
+}
 
-  empresa     Empresa   @relation(fields: [id_empresa], references: [id_empresa])
-  fases       Fase[]
-  usuarios    ProyUsu[]
-  notificaciones Notificacion[]
+model Proyecto {
+  id_proy         Int              @id @default(autoincrement())
+  id_empresa      Int
+
+  nombre          String
+  fechaInicio     DateTime
+  fechaFin        DateTime
+  progreso        Int              @default(0)
+  estado          EstadoProyecto   @default(en_curso)
+
+  empresa         Empresa          @relation(fields: [id_empresa], references: [id_empresa])
+  fases           Fase[]
+  usuarios        ProyUsu[]
+  notificaciones  Notificacion[]
 }
 
 model ProyUsu {
-  id          Int      @id @default(autoincrement())
-  id_proy     Int
-  id_user     Int
+  id      Int @id @default(autoincrement())
+  id_proy Int
+  id_user Int
 
-  proyecto    Proyecto @relation(fields: [id_proy], references: [id_proy])
-  usuario     Usuario  @relation(fields: [id_user], references: [id_user])
+  proyecto Proyecto @relation(fields: [id_proy], references: [id_proy])
+  usuario  Usuario  @relation(fields: [id_user], references: [id_user])
 
   @@unique([id_proy, id_user])
 }
 
 model Fase {
-  id_fase     Int       @id @default(autoincrement())
-  id_proy     Int
-  nombre      String
+  id_fase Int    @id @default(autoincrement())
+  id_proy Int
+  nombre  String
 
-  proyecto    Proyecto  @relation(fields: [id_proy], references: [id_proy])
+  proyecto    Proyecto     @relation(fields: [id_proy], references: [id_proy])
   checkpoints Checkpoint[]
 }
 
 model Checkpoint {
-  id_check    Int       @id @default(autoincrement())
-  id_fase     Int
-  nombre      String
-  estado      String
+  id_check Int    @id @default(autoincrement())
+  id_fase  Int
+  nombre   String
+  estado   String
 
-  fase        Fase      @relation(fields: [id_fase], references: [id_fase])
-  documentos  Documento[]
+  fase       Fase        @relation(fields: [id_fase], references: [id_fase])
+  documentos Documento[]
 }
 
 model Documento {
-  id_doc      Int       @id @default(autoincrement())
+  id_doc      Int    @id @default(autoincrement())
   url_archivo String
   id_check    Int
   id_empresa  Int
   id_carpeta  Int
 
-  checkpoint  Checkpoint @relation(fields: [id_check], references: [id_check])
-  empresa     Empresa    @relation(fields: [id_empresa], references: [id_empresa])
-  carpeta     Carpeta    @relation(fields: [id_carpeta], references: [id_carpeta])
+  checkpoint Checkpoint @relation(fields: [id_check], references: [id_check])
+  empresa    Empresa    @relation(fields: [id_empresa], references: [id_empresa])
+  carpeta    Carpeta    @relation(fields: [id_carpeta], references: [id_carpeta])
 }
 
 model Carpeta {
-  id_carpeta  Int       @id @default(autoincrement())
-  nombre      String
-  ubicacion   String
+  id_carpeta Int    @id @default(autoincrement())
+  nombre     String
+  ubicacion  String
 
-  documentos  Documento[]
+  documentos Documento[]
 }
 
 model Factura {
-  id_fact     Int       @id @default(autoincrement())
+  id_fact     Int    @id @default(autoincrement())
   url_archivo String
   id_empresa  Int
   importe     Float
   estado      String
 
-  empresa     Empresa   @relation(fields: [id_empresa], references: [id_empresa])
+  empresa Empresa @relation(fields: [id_empresa], references: [id_empresa])
 }
 
 model Notificacion {
-  id_not      Int       @id @default(autoincrement())
-  id_proy     Int
-  id_empresa  Int
-  texto       String
-  tags        String?
+  id_not     Int     @id @default(autoincrement())
+  id_proy    Int
+  id_empresa Int
+  texto      String
+  tags       String?
 
-  proyecto    Proyecto  @relation(fields: [id_proy], references: [id_proy])
-  empresa     Empresa   @relation(fields: [id_empresa], references: [id_empresa])
-  usuarios    NotUsu[]
+  proyecto Proyecto @relation(fields: [id_proy], references: [id_proy])
+  empresa  Empresa  @relation(fields: [id_empresa], references: [id_empresa])
+  usuarios NotUsu[]
 }
 
 model NotUsu {
-  id          Int      @id @default(autoincrement())
-  id_not      Int
-  id_user     Int
-  visto       Boolean  @default(false)
+  id      Int     @id @default(autoincrement())
+  id_not  Int
+  id_user Int
+  visto   Boolean @default(false)
 
   notificacion Notificacion @relation(fields: [id_not], references: [id_not])
   usuario      Usuario      @relation(fields: [id_user], references: [id_user])
