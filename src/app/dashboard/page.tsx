@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FileText, File, BarChart3, Search } from "lucide-react";
 
 import { Header } from "../components/Header";
@@ -9,67 +9,10 @@ import { RecentDocuments } from "../components/RecentDocuments";
 import { ProjectList } from "../components/ProjectList";
 import { ClientDetailsModal } from "../components/ClientDetailsModal";
 
-
-interface Proyecto {
-  id: string
-  nombre: string
-  fechaInicio: string
-  fechaFin: string
-  progreso: number
-  estado: "en_curso" | "completado" | "pendiente"
-  responsable: string
-}
+import { Proyecto } from "@/types/index";
 
 // Simulando los hooks y componentes que no están disponibles
 const useRole = () => ({ role: "superadmin" }); // Cambiar según necesites
-
-const proyectos: Proyecto[] = [
-    {
-      id: "1",
-      nombre: "Reforma Oficina Central",
-      fechaInicio: "10/01/2023",
-      fechaFin: "30/06/2023",
-      progreso: 75,
-      estado: "en_curso",
-      responsable: "Juan Pérez",
-    },
-    {
-      id: "2",
-      nombre: "Instalación Eléctrica",
-      fechaInicio: "15/02/2023",
-      fechaFin: "15/03/2023",
-      progreso: 90,
-      estado: "en_curso",
-      responsable: "María López",
-    },
-    {
-      id: "3",
-      nombre: "Climatización",
-      fechaInicio: "01/03/2023",
-      fechaFin: "30/04/2023",
-      progreso: 45,
-      estado: "en_curso",
-      responsable: "Carlos Rodríguez",
-    },
-    {
-      id: "4",
-      nombre: "Instalación Mobiliario",
-      fechaInicio: "15/05/2023",
-      fechaFin: "30/05/2023",
-      progreso: 0,
-      estado: "pendiente",
-      responsable: "Ana Martínez",
-    },
-    {
-      id: "5",
-      nombre: "Mantenimiento Anual",
-      fechaInicio: "01/01/2023",
-      fechaFin: "31/12/2023",
-      progreso: 30,
-      estado: "en_curso",
-      responsable: "Pedro Sánchez",
-    },
-  ]
 
 
 export default function DashboardPage() {
@@ -78,10 +21,31 @@ export default function DashboardPage() {
   const [isClientModalOpen, setIsClientModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("general");
 
+  const [proyectos, setProyectos] = useState<Proyecto[]>([]);
+  const [loading, setLoading] = useState(true);
+
+   useEffect(() => {
+    async function fetchProyectos() {
+      try {
+        const res = await fetch('/api/proyectos');
+        const data = await res.json();
+        setProyectos(data);
+      } catch (error) {
+        console.error('Error fetching proyectos:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchProyectos();
+  }, []);
+
   const handleViewClientDetails = (client: any) => {
     setSelectedClient(client);
     setIsClientModalOpen(true);
   };
+
+  
 
   return (
     <div className="d-flex flex-column min-vh-100">
