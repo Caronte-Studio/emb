@@ -1,11 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { BarChart3, Search, Filter, Calendar, PlusCircle, Clock, CheckCircle2, Edit } from "lucide-react";
+import {  Search, Filter, Calendar, PlusCircle, CheckCircle2 } from "lucide-react";
 import { Header } from "../components/Header";
 // import { useRole } from "@/components/role-provider"
 import { ProjectTimeline } from "../components/ProjectTimeline";
 import { ProjectEditor } from "../components/ProjectEditor"
+import NewProjectForm from "../components/NewProjectForm";
 
 interface Proyecto {
   id: string;
@@ -24,6 +25,8 @@ export default function ProyectosPage() {
   const [activeTab, setActiveTab] = useState("lista");
   const [selectValue, setSelectValue] = useState("all");
   const [isSelectOpen, setIsSelectOpen] = useState(false);
+  const [showNewProjectForm, setShowNewProjectForm] = useState(false)
+
 
   const canCreate = role === "superadmin";
   //   const canCreate = role === "responsable" || role === "superadmin"
@@ -105,6 +108,10 @@ export default function ProyectosPage() {
     setEditingProject(null);
   };
 
+  const handleCreateProject = (nuevoProyecto: any) => {
+    console.log("Nuevo proyecto creado:", nuevoProyecto)
+  }
+
   const selectOptions = [
     { value: "all", label: "Todos los estados" },
     { value: "en_curso", label: "En curso" },
@@ -123,7 +130,7 @@ export default function ProyectosPage() {
           <div className="d-flex justify-content-between align-items-center">
             <h1 className="fs-3 fw-bold">Proyectos</h1>
             {canCreate && (
-              <button className="btn btn-primary">
+              <button className="btn btn-primary" onClick={() => setShowNewProjectForm(true)}>
                 <PlusCircle className="me-2" size={16} />
                 Nuevo proyecto
               </button>
@@ -264,6 +271,11 @@ export default function ProyectosPage() {
           open={!!editingProject}
         />
       )}
+      <NewProjectForm
+        open={showNewProjectForm}
+        onClose={() => setShowNewProjectForm(false)}
+        onSave={handleCreateProject}
+      />
     </div>
   );
 }
