@@ -1,0 +1,332 @@
+###### EXTRA TABS
+
+
+          Documentos Tab
+          {activeTab === "documentos" && (
+            <div className="tab-pane fade show active">
+              <div className="card">
+                <div className="card-header">
+                  <h5 className="card-title mb-0">Documentos Recientes</h5>
+                  <small className="text-muted">Visualiza y gestiona tus documentos</small>
+                </div>
+                <div className="card-body">
+                  <RecentDocuments role="superadmin" />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Proyectos Tab */}
+          {activeTab === "proyectos" && (
+            <div className="tab-pane fade show active">
+              <div className="card">
+                <div className="card-header">
+                  <h5 className="card-title mb-0">Estado de Proyectos</h5>
+                  <small className="text-muted">Seguimiento detallado de tus proyectos</small>
+                </div>
+                <div className="card-body">
+                  <div className="row g-4">
+                    <div className="col-12">
+                      <div className="d-flex justify-content-between align-items-center mb-2">
+                        <div className="d-flex align-items-center">
+                          <BarChart3 className="text-muted me-2" size={16} />
+                          <span className="fw-medium">Reforma Oficina Central</span>
+                        </div>
+                        <span className="text-muted small">75%</span>
+                      </div>
+                      <div className="progress mb-4" style={{ height: "8px" }}>
+                        <div className="progress-bar" style={{ width: "75%" }}></div>
+                      </div>
+                    </div>
+
+                    <div className="col-12">
+                      <div className="d-flex justify-content-between align-items-center mb-2">
+                        <div className="d-flex align-items-center">
+                          <BarChart3 className="text-muted me-2" size={16} />
+                          <span className="fw-medium">Instalación Eléctrica</span>
+                        </div>
+                        <span className="text-muted small">90%</span>
+                      </div>
+                      <div className="progress mb-4" style={{ height: "8px" }}>
+                        <div className="progress-bar bg-success" style={{ width: "90%" }}></div>
+                      </div>
+                    </div>
+
+                    <div className="col-12">
+                      <div className="d-flex justify-content-between align-items-center mb-2">
+                        <div className="d-flex align-items-center">
+                          <BarChart3 className="text-muted me-2" size={16} />
+                          <span className="fw-medium">Climatización</span>
+                        </div>
+                        <span className="text-muted small">45%</span>
+                      </div>
+                      <div className="progress mb-4" style={{ height: "8px" }}>
+                        <div className="progress-bar bg-warning" style={{ width: "45%" }}></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Clientes Tab */}
+          {activeTab === "clientes" && (
+            <div className="tab-pane fade show active">
+              <div className="card mb-4">
+                <div className="card-header">
+                  <h5 className="card-title mb-0">Clientes</h5>
+                  <small className="text-muted">Gestión y seguimiento de clientes</small>
+                </div>
+                <div className="card-body">
+                  <div className="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                      <h6 className="mb-1">Listado de Clientes</h6>
+                      <small className="text-muted">
+                        {role === "superadmin" && "Todos los clientes del sistema"}
+                        {role === "responsable" && "Clientes de tu empresa"}
+                        {role === "operario" && "Clientes asignados"}
+                        {role === "cliente" && "Tu información de cliente"}
+                      </small>
+                    </div>
+                    {(role === "superadmin" || role === "responsable") && (
+                      <button className="btn btn-outline-secondary btn-sm">
+                        <Search className="me-2" size={16} />
+                        Buscar cliente
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="table-responsive">
+                    <table className="table table-hover">
+                      <thead className="table-light">
+                        <tr>
+                          <th>Nombre</th>
+                          <th>Empresa</th>
+                          <th>Contacto</th>
+                          <th>Proyectos</th>
+                          <th className="text-end">Acciones</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td className="fw-medium">Pedro Sánchez</td>
+                          <td>Empresa C</td>
+                          <td>pedro.sanchez@empresac.com</td>
+                          <td>2</td>
+                          <td className="text-end">
+                            <button
+                              className="btn btn-ghost btn-sm"
+                              onClick={() =>
+                                handleViewClientDetails({
+                                  id: 1,
+                                  name: "Pedro Sánchez",
+                                  company: "Empresa C",
+                                  email: "pedro.sanchez@empresac.com",
+                                  phone: "+34 666 123 456",
+                                  projects: 2,
+                                  documents: 8,
+                                  joinDate: "2023-01-15",
+                                  status: "Activo",
+                                })
+                              }
+                            >
+                              Ver detalles
+                            </button>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td className="fw-medium">Laura García</td>
+                          <td>Empresa C</td>
+                          <td>laura.garcia@empresac.com</td>
+                          <td>1</td>
+                          <td className="text-end">
+                            <button
+                              className="btn btn-ghost btn-sm"
+                              onClick={() =>
+                                handleViewClientDetails({
+                                  id: 2,
+                                  name: "Laura García",
+                                  company: "Empresa C",
+                                  email: "laura.garcia@empresac.com",
+                                  phone: "+34 655 987 654",
+                                  projects: 1,
+                                  documents: 5,
+                                  joinDate: "2023-03-20",
+                                  status: "Activo",
+                                })
+                              }
+                            >
+                              Ver detalles
+                            </button>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td className="fw-medium">Javier Fernández</td>
+                          <td>Empresa D</td>
+                          <td>javier.fernandez@empresad.com</td>
+                          <td>3</td>
+                          <td className="text-end">
+                            <button
+                              className="btn btn-ghost btn-sm"
+                              onClick={() =>
+                                handleViewClientDetails({
+                                  id: 3,
+                                  name: "Javier Fernández",
+                                  company: "Empresa D",
+                                  email: "javier.fernandez@empresad.com",
+                                  phone: "+34 677 222 333",
+                                  projects: 3,
+                                  documents: 11,
+                                  joinDate: "2022-11-01",
+                                  status: "Inactivo",
+                                })
+                              }
+                            >
+                              Ver detalles
+                            </button>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+
+              {/* Summary Cards */}
+              <div className="row g-4">
+                <div className="col-md-4">
+                  <div className="card">
+                    <div className="card-header">
+                      <h6 className="card-title mb-0">Resumen de Clientes</h6>
+                    </div>
+                    <div className="card-body">
+                      <div className="d-flex justify-content-between align-items-center mb-3">
+                        <span className="small fw-medium">Total clientes:</span>
+                        <span className="fw-bold">3</span>
+                      </div>
+                      <div className="d-flex justify-content-between align-items-center mb-3">
+                        <span className="small fw-medium">Clientes activos:</span>
+                        <span className="fw-bold text-success">3</span>
+                      </div>
+                      <div className="d-flex justify-content-between align-items-center">
+                        <span className="small fw-medium">Clientes inactivos:</span>
+                        <span className="fw-bold text-danger">0</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="col-md-4">
+                  <div className="card">
+                    <div className="card-header">
+                      <h6 className="card-title mb-0">Proyectos por Cliente</h6>
+                    </div>
+                    <div className="card-body">
+                      <div className="d-flex justify-content-between align-items-center mb-3">
+                        <span className="small fw-medium">Pedro Sánchez:</span>
+                        <span className="fw-bold">2 proyectos</span>
+                      </div>
+                      <div className="d-flex justify-content-between align-items-center mb-3">
+                        <span className="small fw-medium">Laura García:</span>
+                        <span className="fw-bold">1 proyecto</span>
+                      </div>
+                      <div className="d-flex justify-content-between align-items-center">
+                        <span className="small fw-medium">Javier Fernández:</span>
+                        <span className="fw-bold">3 proyectos</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="col-md-4">
+                  <div className="card">
+                    <div className="card-header">
+                      <h6 className="card-title mb-0">Documentos por Cliente</h6>
+                    </div>
+                    <div className="card-body">
+                      <div className="d-flex justify-content-between align-items-center mb-3">
+                        <span className="small fw-medium">Pedro Sánchez:</span>
+                        <span className="fw-bold">8 documentos</span>
+                      </div>
+                      <div className="d-flex justify-content-between align-items-center mb-3">
+                        <span className="small fw-medium">Laura García:</span>
+                        <span className="fw-bold">5 documentos</span>
+                      </div>
+                      <div className="d-flex justify-content-between align-items-center">
+                        <span className="small fw-medium">Javier Fernández:</span>
+                        <span className="fw-bold">11 documentos</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Administración Tab */}
+          {(role === "responsable" || role === "superadmin") && activeTab === "administracion" && (
+            <div className="tab-pane fade show active">
+              <div className="card">
+                <div className="card-header">
+                  <h5 className="card-title mb-0">Administración</h5>
+                  <small className="text-muted">Gestión de usuarios y permisos</small>
+                </div>
+                <div className="card-body">
+                  {role === "superadmin" ? (
+                    <div>
+                      <p className="mb-4">Panel de administración para SuperAdmin con acceso completo.</p>
+                      <div className="row g-4">
+                        <div className="col-md-6">
+                          <div className="card">
+                            <div className="card-header">
+                              <h6 className="card-title mb-0">Gestión de Empresas</h6>
+                            </div>
+                            <div className="card-body">
+                              <p className="text-muted small mb-0">Administra todas las empresas del grupo</p>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="col-md-6">
+                          <div className="card">
+                            <div className="card-header">
+                              <h6 className="card-title mb-0">Gestión de Roles</h6>
+                            </div>
+                            <div className="card-body">
+                              <p className="text-muted small mb-0">Administra los roles de todos los usuarios</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div>
+                      <p className="mb-4">Panel de administración para Responsable de Empresa.</p>
+                      <div className="row g-4">
+                        <div className="col-md-6">
+                          <div className="card">
+                            <div className="card-header">
+                              <h6 className="card-title mb-0">Gestión de Documentos</h6>
+                            </div>
+                            <div className="card-body">
+                              <p className="text-muted small mb-0">Administra los documentos de tu empresa</p>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="col-md-6">
+                          <div className="card">
+                            <div className="card-header">
+                              <h6 className="card-title mb-0">Gestión de Proyectos</h6>
+                            </div>
+                            <div className="card-body">
+                              <p className="text-muted small mb-0">Administra los proyectos de tu empresa</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}

@@ -1,0 +1,148 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+model Usuario {
+  id_user        Int           @id @default(autoincrement())
+  email          String        @unique
+  nombre         String
+  apellidos      String
+  tipo           String
+  rol            String
+  foto_url       String?
+  fecha_creacion DateTime      @default(now())
+  activo         Boolean       @default(true)
+
+  usuEmpresas    UsuEmp[]
+  proyectos      ProyUsu[]
+  notificaciones NotUsu[]
+}
+
+model Empresa {
+  id_empresa  Int       @id @default(autoincrement())
+  nombre      String
+
+  usuarios    UsuEmp[]
+  proyectos   Proyecto[]
+  documentos  Documento[]
+  facturas    Factura[]
+  notificaciones Notificacion[]
+}
+
+model UsuEmp {
+  id          Int     @id @default(autoincrement())
+  id_user     Int
+  id_empresa  Int
+
+  usuario     Usuario @relation(fields: [id_user], references: [id_user])
+  empresa     Empresa @relation(fields: [id_empresa], references: [id_empresa])
+
+  @@unique([id_user, id_empresa])
+}
+
+model Proyecto {
+  id_proy     Int       @id @default(autoincrement())
+  id_empresa  Int
+
+  empresa     Empresa   @relation(fields: [id_empresa], references: [id_empresa])
+  fases       Fase[]
+  usuarios    ProyUsu[]
+  notificaciones Notificacion[]
+}
+
+model ProyUsu {
+  id          Int      @id @default(autoincrement())
+  id_proy     Int
+  id_user     Int
+
+  proyecto    Proyecto @relation(fields: [id_proy], references: [id_proy])
+  usuario     Usuario  @relation(fields: [id_user], references: [id_user])
+
+  @@unique([id_proy, id_user])
+}
+
+model Fase {
+  id_fase     Int       @id @default(autoincrement())
+  id_proy     Int
+  nombre      String
+
+  proyecto    Proyecto  @relation(fields: [id_proy], references: [id_proy])
+  checkpoints Checkpoint[]
+}
+
+model Checkpoint {
+  id_check    Int       @id @default(autoincrement())
+  id_fase     Int
+  nombre      String
+  estado      String
+
+  fase        Fase      @relation(fields: [id_fase], references: [id_fase])
+  documentos  Documento[]
+}
+
+model Documento {
+  id_doc      Int       @id @default(autoincrement())
+  url_archivo String
+  id_check    Int
+  id_empresa  Int
+  id_carpeta  Int
+
+  checkpoint  Checkpoint @relation(fields: [id_check], references: [id_check])
+  empresa     Empresa    @relation(fields: [id_empresa], references: [id_empresa])
+  carpeta     Carpeta    @relation(fields: [id_carpeta], references: [id_carpeta])
+}
+
+model Carpeta {
+  id_carpeta  Int       @id @default(autoincrement())
+  nombre      String
+  ubicacion   String
+
+  documentos  Documento[]
+}
+
+model Factura {
+  id_fact     Int       @id @default(autoincrement())
+  url_archivo String
+  id_empresa  Int
+  importe     Float
+  estado      String
+
+  empresa     Empresa   @relation(fields: [id_empresa], references: [id_empresa])
+}
+
+model Notificacion {
+  id_not      Int       @id @default(autoincrement())
+  id_proy     Int
+  id_empresa  Int
+  texto       String
+  tags        String?
+
+  proyecto    Proyecto  @relation(fields: [id_proy], references: [id_proy])
+  empresa     Empresa   @relation(fields: [id_empresa], references: [id_empresa])
+  usuarios    NotUsu[]
+}
+
+model NotUsu {
+  id          Int      @id @default(autoincrement())
+  id_not      Int
+  id_user     Int
+  visto       Boolean  @default(false)
+
+  notificacion Notificacion @relation(fields: [id_not], references: [id_not])
+  usuario      Usuario      @relation(fields: [id_user], references: [id_user])
+
+  @@unique([id_not, id_user])
+}
