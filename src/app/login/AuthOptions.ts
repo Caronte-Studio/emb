@@ -1,13 +1,12 @@
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
-// import { query } from "@/lib/db";
+import { PrismaClient } from "@prisma/client";
 import { JWT } from "next-auth/jwt";
 
+const prisma = new PrismaClient();
 
-// #################### De la libreria de Next Auth ####################
-export const authOptions : NextAuthOptions = {
-  // ########### proveedores ###########
+export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
       name: "Credentials",
@@ -20,25 +19,33 @@ export const authOptions : NextAuthOptions = {
 
         const { usuario, password } = credentials;
 
-        const sql = "SELECT * FROM team_member WHERE usuario = ? AND fecha_salida IS NULL";
-        const results: any = await query(sql, [usuario]);
+        try {
+          // Buscar usuario con Prisma
+          const user = await prisma.team_member.findFirst({
+            where: {
+              usuario: usuario,
+              fecha_salida: null
+            }
+          });
 
-        if (!results || results.length === 0) {
-          throw new Error("Usuario no encontrado");
+          if (!user) {
+            throw new Error("Usuario no encontrado");
+          }
+
+          const passwordMatch = await bcrypt.compare(password, user.password);
+          if (!passwordMatch) {
+            throw new Error("Credenciales inválidas");
+          }
+
+          return {
+            id: user.id_member.toString(), // Asegurar que es string
+            name: user.nombre,
+            role: user.rol,
+          };
+        } catch (error) {
+          console.error("Error en autorización:", error);
+          throw error;
         }
-
-        const user = results[0];
-
-        const passwordMatch = await bcrypt.compare(password, user.password);
-        if (!passwordMatch) {
-          throw new Error("Credenciales inválidas");
-        }
-
-        return {
-          id: user.id_member,
-          name: user.nombre,
-          role: user.rol,
-        };
       },
     }),
   ],
@@ -48,7 +55,6 @@ export const authOptions : NextAuthOptions = {
     maxAge: 30 * 24 * 60 * 60, // 30 days
     updateAge: 24 * 60 * 60, // 24 hours
   },
-  // ############ callbacks ############
   callbacks: {
     async jwt({ token, user }: { token: JWT; user: any }) {
       if (user) {

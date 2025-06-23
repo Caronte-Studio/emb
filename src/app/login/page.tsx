@@ -1,19 +1,52 @@
 "use client";
-import type React from "react";
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Building } from "lucide-react";
+import { signIn } from "next-auth/react";
+
+
+function Alert({ variant, children }: { variant?: string; children: React.ReactNode }) {
+  const alertClass = variant === "destructive" 
+    ? "alert alert-danger" 
+    : "alert alert-primary";
+
+  return (
+    <div className={`${alertClass} mb-3`}>
+      {children}
+    </div>
+  );
+}
 
 export default function LoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState("");
+  const [usuario, setUsuario] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // lógica de autenticación
-    router.push("/dashboard");
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const result = await signIn("credentials", {
+        redirect: false,
+        usuario,
+        password,
+      });
+
+      if (result?.error) {
+        setError(result.error);
+      } else {
+        router.push("/dashboard");
+      }
+    } catch (err) {
+      setError("Ocurrió un error durante el inicio de sesión");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -26,18 +59,26 @@ export default function LoginPage() {
           </div>
         </div>
         <div className="card-body">
+          {error && (
+            <Alert variant="destructive">
+              {error === "CredentialsSignin" 
+                ? "Credenciales inválidas" 
+                : error}
+            </Alert>
+          )}
+          
           <form onSubmit={handleSubmit}>
             <div className="mb-3">
-              <label htmlFor="email" className="form-label">
-                Correo electrónico
+              <label htmlFor="usuario" className="form-label">
+                Usuario
               </label>
               <input
-                id="email"
-                type="email"
+                id="usuario"
+                type="text"
                 className="form-control"
-                placeholder="correo@ejemplo.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Nombre de usuario"
+                value={usuario}
+                onChange={(e) => setUsuario(e.target.value)}
                 required
               />
             </div>
@@ -50,15 +91,26 @@ export default function LoginPage() {
                   ¿Olvidaste tu contraseña?
                 </Link>
               </div>
-              <input id="password" type="password" className="form-control" value={password} onChange={(e) => setPassword(e.target.value)} required />
+              <input 
+                id="password" 
+                type="password" 
+                className="form-control" 
+                value={password} 
+                onChange={(e) => setPassword(e.target.value)} 
+                required 
+              />
             </div>
-            <button type="submit" className="btn btn-primary w-100">
-              Iniciar sesión
+            <button 
+              type="submit" 
+              className="btn btn-primary w-100"
+              disabled={isLoading}
+            >
+              {isLoading ? "Iniciando sesión..." : "Iniciar sesión"}
             </button>
           </form>
         </div>
         <div className="card-footer bg-white border-0 text-center">
-          
+          {/* Puedes añadir enlaces adicionales aquí si es necesario */}
         </div>
       </div>
     </div>
