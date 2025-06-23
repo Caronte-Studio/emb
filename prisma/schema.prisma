@@ -15,15 +15,15 @@ datasource db {
 }
 
 model Usuario {
-  id_user        Int      @id @default(autoincrement())
-  email          String   @unique
+  id_user        Int        @id @default(autoincrement())
+  email          String     @unique
   nombre         String
   apellidos      String
-  tipo           String
-  rol            String
+  telefono       String? 
+  rol            RolUsuario @default(Cliente) // Usamos el enum aquí
   foto_url       String?
-  fecha_creacion DateTime @default(now())
-  activo         Boolean  @default(true)
+  fecha_creacion DateTime   @default(now())
+  activo         Boolean    @default(true)
 
   usuEmpresas    UsuEmp[]
   proyectos      ProyUsu[]
@@ -59,19 +59,19 @@ enum EstadoProyecto {
 }
 
 model Proyecto {
-  id_proy         Int              @id @default(autoincrement())
-  id_empresa      Int
+  id_proy    Int @id @default(autoincrement())
+  id_empresa Int
 
-  nombre          String
-  fechaInicio     DateTime
-  fechaFin        DateTime
-  progreso        Int              @default(0)
-  estado          EstadoProyecto   @default(en_curso)
+  nombre      String
+  fechaInicio DateTime
+  fechaFin    DateTime
+  progreso    Int            @default(0)
+  estado      EstadoProyecto @default(en_curso)
 
-  empresa         Empresa          @relation(fields: [id_empresa], references: [id_empresa])
-  fases           Fase[]
-  usuarios        ProyUsu[]
-  notificaciones  Notificacion[]
+  empresa        Empresa        @relation(fields: [id_empresa], references: [id_empresa])
+  fases          Fase[]
+  usuarios       ProyUsu[]
+  notificaciones Notificacion[]
 }
 
 model ProyUsu {
@@ -105,15 +105,18 @@ model Checkpoint {
 }
 
 model Documento {
-  id_doc      Int    @id @default(autoincrement())
+  id_doc      Int      @id @default(autoincrement())
   url_archivo String
   id_check    Int
   id_empresa  Int
   id_carpeta  Int
+  createdAt   DateTime @default(now()) @map("created_at")
 
   checkpoint Checkpoint @relation(fields: [id_check], references: [id_check])
   empresa    Empresa    @relation(fields: [id_empresa], references: [id_empresa])
   carpeta    Carpeta    @relation(fields: [id_carpeta], references: [id_carpeta])
+
+  @@map("documentos")
 }
 
 model Carpeta {
@@ -125,13 +128,16 @@ model Carpeta {
 }
 
 model Factura {
-  id_fact     Int    @id @default(autoincrement())
+  id_fact     Int      @id @default(autoincrement())
   url_archivo String
   id_empresa  Int
   importe     Float
   estado      String
+  createdAt   DateTime @default(now()) @map("created_at")
 
   empresa Empresa @relation(fields: [id_empresa], references: [id_empresa])
+
+  @@map("facturas")
 }
 
 model Notificacion {
@@ -156,4 +162,12 @@ model NotUsu {
   usuario      Usuario      @relation(fields: [id_user], references: [id_user])
 
   @@unique([id_not, id_user])
+}
+
+
+enum RolUsuario {
+  Superadmin
+  Responsable
+  Operario
+  Cliente
 }

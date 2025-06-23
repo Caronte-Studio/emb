@@ -1,45 +1,36 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import {
-  Calendar,
-  Building2,
-  Euro,
-  Clock,
-  Save,
-  X,
-  Layout,
-  CheckCircle2,
-} from "lucide-react"
+import { useState } from "react";
+import { Calendar, Building2, Euro, Clock, Save, X, Layout, CheckCircle2 } from "lucide-react";
 
 interface Cliente {
-  id: string
-  nombre: string
-  empresa_cliente?: string
-  email: string
-  tipo: "empresa" | "particular"
+  id: string;
+  nombre: string;
+  empresa_cliente?: string;
+  email: string;
+  tipo: "empresa" | "particular";
 }
 
 interface Plantilla {
-  id: string
-  nombre: string
-  descripcion: string
-  categoria: string
-  etiquetas: string[]
-  duracion_estimada: number
-  fases: number
-  checkpoints: number
+  id: string;
+  nombre: string;
+  descripcion: string;
+  categoria: string;
+  etiquetas: string[];
+  duracion_estimada: number;
+  fases: number;
+  checkpoints: number;
 }
 
 interface NewProjectFormProps {
-  open: boolean
-  onClose: () => void
-  onSave: (proyecto: any) => void
+  open: boolean;
+  onClose: () => void;
+  onSave: (proyecto: any) => void;
 }
 
 export default function NewProjectForm({ open, onClose, onSave }: NewProjectFormProps) {
-  const [activeTab, setActiveTab] = useState("basico")
-  const [selectedTemplate, setSelectedTemplate] = useState<string>("")
+  const [activeTab, setActiveTab] = useState("basico");
+  const [selectedTemplate, setSelectedTemplate] = useState<string>("");
   const [formData, setFormData] = useState({
     nombre: "",
     descripcion: "",
@@ -52,9 +43,9 @@ export default function NewProjectForm({ open, onClose, onSave }: NewProjectForm
     fecha_fin_estimada: "",
     presupuesto: "",
     notas: "",
-  })
+  });
 
-  const [errors, setErrors] = useState<Record<string, string>>({})
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   // Datos de ejemplo
   const clientes: Cliente[] = [
@@ -85,7 +76,7 @@ export default function NewProjectForm({ open, onClose, onSave }: NewProjectForm
       email: "ana@inmobiliariamartinez.com",
       tipo: "empresa",
     },
-  ]
+  ];
 
   const empresas = [
     { id: "1", nombre: "Juan Pérez", especialidad: "Arquitecto Técnico" },
@@ -93,7 +84,7 @@ export default function NewProjectForm({ open, onClose, onSave }: NewProjectForm
     { id: "3", nombre: "Carlos Rodríguez", especialidad: "Director de Proyecto" },
     { id: "4", nombre: "Ana Martínez", especialidad: "Gestor Administrativo" },
     { id: "5", nombre: "Pedro Sánchez", especialidad: "Arquitecto Principal" },
-  ]
+  ];
 
   const plantillas: Plantilla[] = [
     {
@@ -136,66 +127,85 @@ export default function NewProjectForm({ open, onClose, onSave }: NewProjectForm
       fases: 8,
       checkpoints: 35,
     },
-  ]
+  ];
 
   const validateForm = () => {
-    const newErrors: Record<string, string> = {}
+    const newErrors: Record<string, string> = {};
 
     if (!formData.nombre.trim()) {
-      newErrors.nombre = "El nombre del proyecto es obligatorio"
+      newErrors.nombre = "El nombre del proyecto es obligatorio";
     }
 
     if (!formData.cliente_id) {
-      newErrors.cliente_id = "Debe seleccionar un cliente"
+      newErrors.cliente_id = "Debe seleccionar un cliente";
     }
 
     if (!formData.empresa_id) {
-      newErrors.empresa_id = "Debe asignar a una empresa"
+      newErrors.empresa_id = "Debe asignar a una empresa";
     }
 
     if (!formData.fecha_inicio) {
-      newErrors.fecha_inicio = "La fecha de inicio es obligatoria"
+      newErrors.fecha_inicio = "La fecha de inicio es obligatoria";
     }
 
     if (!formData.fecha_fin_estimada) {
-      newErrors.fecha_fin_estimada = "La fecha de fin estimada es obligatoria"
+      newErrors.fecha_fin_estimada = "La fecha de fin estimada es obligatoria";
     }
 
     if (formData.fecha_inicio && formData.fecha_fin_estimada) {
-      const fechaInicio = new Date(formData.fecha_inicio)
-      const fechaFin = new Date(formData.fecha_fin_estimada)
+      const fechaInicio = new Date(formData.fecha_inicio);
+      const fechaFin = new Date(formData.fecha_fin_estimada);
       if (fechaFin <= fechaInicio) {
-        newErrors.fecha_fin_estimada = "La fecha de fin debe ser posterior a la fecha de inicio"
+        newErrors.fecha_fin_estimada = "La fecha de fin debe ser posterior a la fecha de inicio";
       }
     }
 
     if (formData.presupuesto && isNaN(Number(formData.presupuesto))) {
-      newErrors.presupuesto = "El presupuesto debe ser un número válido"
+      newErrors.presupuesto = "El presupuesto debe ser un número válido";
     }
 
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!validateForm()) {
-      return
+      return;
     }
 
-    const selectedTemplateData = plantillas.find((t) => t.id === formData.plantilla_id)
+    const payload = {
+      id_empresa: formData.empresa_id,
+      nombre: formData.nombre,
+      fechaInicio: formData.fecha_inicio,
+      fechaFin: formData.fecha_fin_estimada,
+      estado: formData.estado,
+      progreso: 0,
+    };
 
-    const nuevoProyecto = {
-      id: `proyecto-${Date.now()}`,
-      ...formData,
-      presupuesto: formData.presupuesto ? Number(formData.presupuesto) : null,
-      progreso_total: 0,
-      plantilla: selectedTemplateData,
-      created_at: new Date().toISOString(),
+    try {
+      const res = await fetch("/api/proyectos", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        const error = await res.json();
+        console.error("Error del servidor:", error);
+        alert(error.error || "Error al crear el proyecto");
+        return;
+      }
+
+      const nuevoProyecto = await res.json();
+      onSave(nuevoProyecto);
+      handleClose();
+    } catch (error) {
+      console.error("Error en la solicitud:", error);
+      alert("Hubo un error al intentar crear el proyecto");
     }
-
-    onSave(nuevoProyecto)
-    handleClose()
-  }
+  };
 
   const handleClose = () => {
     setFormData({
@@ -210,70 +220,61 @@ export default function NewProjectForm({ open, onClose, onSave }: NewProjectForm
       fecha_fin_estimada: "",
       presupuesto: "",
       notas: "",
-    })
-    setSelectedTemplate("")
-    setErrors({})
-    setActiveTab("basico")
-    onClose()
-  }
+    });
+    setSelectedTemplate("");
+    setErrors({});
+    setActiveTab("basico");
+    onClose();
+  };
 
   const handleTemplateSelect = (templateId: string) => {
-    setSelectedTemplate(templateId)
-    setFormData({ ...formData, plantilla_id: templateId })
+    setSelectedTemplate(templateId);
+    setFormData({ ...formData, plantilla_id: templateId });
 
     // Auto-calcular fecha de fin basada en la duración estimada de la plantilla
     if (formData.fecha_inicio && templateId) {
-      const template = plantillas.find((t) => t.id === templateId)
+      const template = plantillas.find((t) => t.id === templateId);
       if (template) {
-        const fechaInicio = new Date(formData.fecha_inicio)
-        const fechaFin = new Date(fechaInicio)
-        fechaFin.setDate(fechaFin.getDate() + template.duracion_estimada)
+        const fechaInicio = new Date(formData.fecha_inicio);
+        const fechaFin = new Date(fechaInicio);
+        fechaFin.setDate(fechaFin.getDate() + template.duracion_estimada);
         setFormData({
           ...formData,
           plantilla_id: templateId,
           fecha_fin_estimada: fechaFin.toISOString().split("T")[0],
-        })
+        });
       }
     }
-  }
+  };
 
   const getPrioridadBadgeClass = (prioridad: string) => {
     switch (prioridad) {
       case "baja":
-        return "bg-success"
+        return "bg-success";
       case "media":
-        return "bg-warning"
+        return "bg-warning";
       case "alta":
-        return "bg-primary"
+        return "bg-primary";
       case "critica":
-        return "bg-danger"
+        return "bg-danger";
       default:
-        return "bg-secondary"
+        return "bg-secondary";
     }
-  }
+  };
 
-  if (!open) return null
+  if (!open) return null;
 
   return (
     <>
       {/* Bootstrap CDN */}
-      <link 
-        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" 
-        rel="stylesheet"
-      />
-      <script 
-        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
-      ></script>
+      <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
       {/* Modal Backdrop */}
       <div className="modal-backdrop fade show" style={{ zIndex: 1040 }}></div>
 
       {/* Modal */}
-      <div 
-        className="modal fade show d-block" 
-        style={{ zIndex: 1050 }}
-        tabIndex={-1}
-      >
+      <div className="modal fade show d-block" style={{ zIndex: 1050 }} tabIndex={-1}>
         <div className="modal-dialog modal-xl modal-dialog-scrollable">
           <div className="modal-content">
             <div className="modal-header">
@@ -283,37 +284,28 @@ export default function NewProjectForm({ open, onClose, onSave }: NewProjectForm
               </h5>
               <button type="button" className="btn-close" onClick={handleClose}></button>
             </div>
-            
+
             <div className="modal-body">
-              <p className="text-muted mb-4">
-                Complete la información básica del proyecto y seleccione una plantilla para comenzar.
-              </p>
+              <p className="text-muted mb-4">Complete la información básica del proyecto y seleccione una plantilla para comenzar.</p>
 
               {/* Tabs Navigation */}
               <ul className="nav nav-tabs mb-4" role="tablist">
                 <li className="nav-item">
-                  <button 
-                    className={`nav-link ${activeTab === 'basico' ? 'active' : ''}`}
-                    onClick={() => setActiveTab('basico')}
-                  >
+                  <button className={`nav-link ${activeTab === "basico" ? "active" : ""}`} onClick={() => setActiveTab("basico")}>
                     Información Básica
                   </button>
                 </li>
                 <li className="nav-item">
-                  <button 
-                    className={`nav-link ${activeTab === 'plantilla' ? 'active' : ''}`}
-                    onClick={() => setActiveTab('plantilla')}
-                  >
+                  <button className={`nav-link ${activeTab === "plantilla" ? "active" : ""}`} onClick={() => setActiveTab("plantilla")}>
                     Plantilla
                   </button>
                 </li>
-                
               </ul>
 
               {/* Tab Content */}
               <div className="tab-content">
                 {/* Información Básica */}
-                {activeTab === 'basico' && (
+                {activeTab === "basico" && (
                   <div className="tab-pane fade show active">
                     <div className="row g-3">
                       <div className="col-md-6">
@@ -322,7 +314,7 @@ export default function NewProjectForm({ open, onClose, onSave }: NewProjectForm
                         </label>
                         <input
                           type="text"
-                          className={`form-control ${errors.nombre ? 'is-invalid' : ''}`}
+                          className={`form-control ${errors.nombre ? "is-invalid" : ""}`}
                           id="nombre"
                           placeholder="Ej: Reforma Oficina Central"
                           value={formData.nombre}
@@ -336,7 +328,7 @@ export default function NewProjectForm({ open, onClose, onSave }: NewProjectForm
                           Cliente <span className="text-danger">*</span>
                         </label>
                         <select
-                          className={`form-select ${errors.cliente_id ? 'is-invalid' : ''}`}
+                          className={`form-select ${errors.cliente_id ? "is-invalid" : ""}`}
                           value={formData.cliente_id}
                           onChange={(e) => setFormData({ ...formData, cliente_id: e.target.value })}
                         >
@@ -355,7 +347,7 @@ export default function NewProjectForm({ open, onClose, onSave }: NewProjectForm
                           empresa <span className="text-danger">*</span>
                         </label>
                         <select
-                          className={`form-select ${errors.empresa_id ? 'is-invalid' : ''}`}
+                          className={`form-select ${errors.empresa_id ? "is-invalid" : ""}`}
                           value={formData.empresa_id}
                           onChange={(e) => setFormData({ ...formData, empresa_id: e.target.value })}
                         >
@@ -370,14 +362,16 @@ export default function NewProjectForm({ open, onClose, onSave }: NewProjectForm
                       </div>
 
                       <div className="col-md-6">
-                        <label htmlFor="presupuesto" className="form-label">Presupuesto (€)</label>
+                        <label htmlFor="presupuesto" className="form-label">
+                          Presupuesto (€)
+                        </label>
                         <div className="input-group">
                           <span className="input-group-text">
-                            <Euro  size={16} />
+                            <Euro size={16} />
                           </span>
                           <input
                             type="number"
-                            className={`form-control ${errors.presupuesto ? 'is-invalid' : ''}`}
+                            className={`form-control ${errors.presupuesto ? "is-invalid" : ""}`}
                             id="presupuesto"
                             placeholder="0.00"
                             value={formData.presupuesto}
@@ -397,7 +391,7 @@ export default function NewProjectForm({ open, onClose, onSave }: NewProjectForm
                           </span>
                           <input
                             type="date"
-                            className={`form-control ${errors.fecha_inicio ? 'is-invalid' : ''}`}
+                            className={`form-control ${errors.fecha_inicio ? "is-invalid" : ""}`}
                             id="fecha_inicio"
                             value={formData.fecha_inicio}
                             onChange={(e) => setFormData({ ...formData, fecha_inicio: e.target.value })}
@@ -416,7 +410,7 @@ export default function NewProjectForm({ open, onClose, onSave }: NewProjectForm
                           </span>
                           <input
                             type="date"
-                            className={`form-control ${errors.fecha_fin_estimada ? 'is-invalid' : ''}`}
+                            className={`form-control ${errors.fecha_fin_estimada ? "is-invalid" : ""}`}
                             id="fecha_fin_estimada"
                             value={formData.fecha_fin_estimada}
                             onChange={(e) => setFormData({ ...formData, fecha_fin_estimada: e.target.value })}
@@ -426,7 +420,9 @@ export default function NewProjectForm({ open, onClose, onSave }: NewProjectForm
                       </div>
 
                       <div className="col-12">
-                        <label htmlFor="descripcion" className="form-label">Descripción del Proyecto</label>
+                        <label htmlFor="descripcion" className="form-label">
+                          Descripción del Proyecto
+                        </label>
                         <textarea
                           className="form-control"
                           id="descripcion"
@@ -441,23 +437,19 @@ export default function NewProjectForm({ open, onClose, onSave }: NewProjectForm
                 )}
 
                 {/* Plantillas */}
-                {activeTab === 'plantilla' && (
+                {activeTab === "plantilla" && (
                   <div className="tab-pane fade show active">
                     <div className="mb-4">
                       <h5>Seleccionar Plantilla</h5>
-                      <p className="text-muted">
-                        Elija una plantilla para estructurar automáticamente las fases y checkpoints del proyecto.
-                      </p>
+                      <p className="text-muted">Elija una plantilla para estructurar automáticamente las fases y checkpoints del proyecto.</p>
                     </div>
 
                     <div className="row g-3">
                       {plantillas.map((plantilla) => (
                         <div key={plantilla.id} className="col-12">
-                          <div 
-                            className={`card h-100 cursor-pointer ${
-                              selectedTemplate === plantilla.id ? 'border-primary shadow' : ''
-                            }`}
-                            style={{ cursor: 'pointer' }}
+                          <div
+                            className={`card h-100 cursor-pointer ${selectedTemplate === plantilla.id ? "border-primary shadow" : ""}`}
+                            style={{ cursor: "pointer" }}
                             onClick={() => handleTemplateSelect(plantilla.id)}
                           >
                             <div className="card-header d-flex justify-content-between align-items-start">
@@ -465,9 +457,7 @@ export default function NewProjectForm({ open, onClose, onSave }: NewProjectForm
                                 <h6 className="card-title mb-1 d-flex align-items-center">
                                   <Layout className="me-2" size={16} />
                                   {plantilla.nombre}
-                                  {selectedTemplate === plantilla.id && (
-                                    <CheckCircle2 className="ms-2 text-primary" size={16} />
-                                  )}
+                                  {selectedTemplate === plantilla.id && <CheckCircle2 className="ms-2 text-primary" size={16} />}
                                 </h6>
                                 <p className="card-text text-muted small mb-0">{plantilla.descripcion}</p>
                               </div>
@@ -499,13 +489,8 @@ export default function NewProjectForm({ open, onClose, onSave }: NewProjectForm
                           <div className="card-body text-center py-5">
                             <Layout size={48} className="text-muted mb-3" />
                             <h6 className="mb-2">Sin Plantilla</h6>
-                            <p className="text-muted mb-3">
-                              Crear un proyecto vacío sin fases predefinidas
-                            </p>
-                            <button 
-                              className="btn btn-outline-primary"
-                              onClick={() => handleTemplateSelect("")}
-                            >
+                            <p className="text-muted mb-3">Crear un proyecto vacío sin fases predefinidas</p>
+                            <button className="btn btn-outline-primary" onClick={() => handleTemplateSelect("")}>
                               Seleccionar
                             </button>
                           </div>
@@ -514,8 +499,6 @@ export default function NewProjectForm({ open, onClose, onSave }: NewProjectForm
                     </div>
                   </div>
                 )}
-
-               
               </div>
             </div>
 
@@ -533,5 +516,5 @@ export default function NewProjectForm({ open, onClose, onSave }: NewProjectForm
         </div>
       </div>
     </>
-  )
+  );
 }

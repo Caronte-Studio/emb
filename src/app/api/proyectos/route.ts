@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
 
     const nuevoProyecto = await prisma.proyecto.create({
       data: {
-        id_empresa,
+        id_empresa: parseInt(id_empresa),
         nombre,
         fechaInicio: new Date(fechaInicio),
         fechaFin: new Date(fechaFin),
